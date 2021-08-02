@@ -105,6 +105,11 @@ func main() {
 	}
 
 	// init
-	log.Info().Msg("Hello")
+	_, err = sonarr.New(&cfg.Sonarr)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Failed initialising sonarr client")
+	}
 
 }
