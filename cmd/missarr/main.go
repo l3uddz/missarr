@@ -105,11 +105,17 @@ func main() {
 	}
 
 	// init
-	_, err = sonarr.New(&cfg.Sonarr)
+	sc, err := sonarr.New(&cfg.Sonarr)
 	if err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("Failed initialising sonarr client")
 	}
 
+	epps, err := sc.Missing()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed retrieving missing")
+	}
+
+	log.Info().Int("size", len(epps)).Msg("Retrieved missing")
 }
