@@ -29,6 +29,9 @@ var (
 		Config    string `type:"path" default:"${config_file}" short:"c" env:"APP_CONFIG" help:"Config file path"`
 		Log       string `type:"path" default:"${log_file}" short:"l" env:"APP_LOG" help:"Log file path"`
 		Verbosity int    `type:"counter" default:"0" short:"v" env:"APP_VERBOSITY" help:"Log level verbosity"`
+
+		// commands
+		Sonarr SonarrCmd `cmd help:"Search sonarr for missing content"`
 	}
 )
 
@@ -104,18 +107,10 @@ func main() {
 		return
 	}
 
-	// init
-	sc, err := sonarr.New(&cfg.Sonarr)
-	if err != nil {
-		log.Fatal().
+	// process cli
+	if err := ctx.Run(&cfg); err != nil {
+		log.Error().
 			Err(err).
-			Msg("Failed initialising sonarr client")
+			Msg("Failed running command")
 	}
-
-	epps, err := sc.Missing()
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed retrieving missing")
-	}
-
-	log.Info().Int("size", len(epps)).Msg("Retrieved missing")
 }
