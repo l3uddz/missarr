@@ -1,8 +1,10 @@
 package sonarr
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/l3uddz/missarr/logger"
+	"github.com/l3uddz/missarr/migrate"
 	"github.com/l3uddz/missarr/util"
 	"github.com/rs/zerolog"
 	"net/http"
@@ -22,11 +24,12 @@ type Client struct {
 	apiURL     string
 	apiHeaders map[string]string
 
-	http *http.Client
-	log  zerolog.Logger
+	store *datastore
+	http  *http.Client
+	log   zerolog.Logger
 }
 
-func New(c *Config) (*Client, error) {
+func New(c *Config, db *sql.DB, mg *migrate.Migrator) (*Client, error) {
 	l := logger.New(c.Verbosity).With().
 		Str("pvr_type", "sonarr").
 		Logger()
@@ -49,13 +52,20 @@ func New(c *Config) (*Client, error) {
 		"X-Api-Key": c.APIKey,
 	}
 
+	// store
+	store, err := newDatastore(db, mg)
+	if err != nil {
+		return nil, err
+	}
+
 	// create client
 	cli := &Client{
 		apiURL:     apiURL,
 		apiHeaders: apiHeaders,
 
-		http: util.NewRetryableHttpClient(time.Duration(c.Timeout)*time.Second, nil, &l),
-		log:  l,
+		store: store,
+		http:  util.NewRetryableHttpClient(time.Duration(c.Timeout)*time.Second, nil, &l),
+		log:   l,
 	}
 
 	// validate api access

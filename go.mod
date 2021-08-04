@@ -15,6 +15,7 @@ require (
 	github.com/lucperkins/rek v0.1.3
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/oriser/regroup v0.0.0-20210730155327-fca8d7531263
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/rs/zerolog v1.23.0
 	github.com/ulikunitz/xz v0.5.10 // indirect
@@ -25,4 +26,5 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	modernc.org/sqlite v1.12.0
 )

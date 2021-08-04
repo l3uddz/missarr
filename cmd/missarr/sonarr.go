@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/l3uddz/missarr/migrate"
 	"github.com/l3uddz/missarr/sonarr"
 	"github.com/rs/zerolog/log"
 	"time"
@@ -11,14 +13,14 @@ type SonarrCmd struct {
 	Limit int `default:"10" help:"How many items to search for before stopping"`
 }
 
-func (r *SonarrCmd) Run(c *config) error {
+func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	// validate flags
 	if r.Limit == 0 {
 		r.Limit = 10
 	}
 
 	// init
-	sc, err := sonarr.New(&c.Sonarr)
+	sc, err := sonarr.New(&c.Sonarr, db, mg)
 	if err != nil {
 		return fmt.Errorf("initialise sonarr: %w", err)
 	}

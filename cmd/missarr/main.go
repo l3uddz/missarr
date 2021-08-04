@@ -1,10 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/alecthomas/kong"
 	"github.com/goccy/go-yaml"
 	"github.com/l3uddz/missarr/build"
+	"github.com/l3uddz/missarr/migrate"
 	"github.com/l3uddz/missarr/sonarr"
 	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
@@ -27,6 +29,7 @@ var (
 
 		// flags
 		Config    string `type:"path" default:"${config_file}" short:"c" env:"APP_CONFIG" help:"Config file path"`
+		Database  string `type:"path" default:"${database_file}" env:"APP_DATABASE" help:"Database file path"`
 		Log       string `type:"path" default:"${log_file}" short:"l" env:"APP_LOG" help:"Log file path"`
 		Verbosity int    `type:"counter" default:"0" short:"v" env:"APP_VERBOSITY" help:"Log level verbosity"`
 
@@ -51,9 +54,10 @@ func main() {
 			Compact: true,
 		}),
 		kong.Vars{
-			"version":     fmt.Sprintf("%s (%s@%s)", build.Version, build.GitCommit, build.Timestamp),
-			"config_file": filepath.Join(defaultConfigDirectory("missarr", "config.yml"), "config.yml"),
-			"log_file":    filepath.Join(defaultConfigDirectory("missarr", "config.yml"), "activity.log"),
+			"version":       fmt.Sprintf("%s (%s@%s)", build.Version, build.GitCommit, build.Timestamp),
+			"config_file":   filepath.Join(defaultConfigDirectory("missarr", "config.yml"), "config.yml"),
+			"database_file": filepath.Join(defaultConfigDirectory("missarr", "config.yml"), "datastore.db"),
+			"log_file":      filepath.Join(defaultConfigDirectory("missarr", "config.yml"), "activity.log"),
 		},
 	)
 
@@ -107,8 +111,25 @@ func main() {
 		return
 	}
 
+	// datastore
+	db, err := sql.Open("sqlite", cli.Database)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Failed opening datastore")
+	}
+	db.SetMaxOpenConns(1)
+
+	// migrator
+	mg, err := migrate.New(db, "migrations")
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Failed initialising migrator")
+	}
+
 	// process cli
-	if err := ctx.Run(&cfg); err != nil {
+	if err := ctx.Run(&cfg, db, mg); err != nil {
 		log.Error().
 			Err(err).
 			Msg("Failed running command")
