@@ -31,16 +31,35 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	}
 	log.Info().
 		Int("size", len(se)).
-		Msg("Retrieved missing")
+		Msg("Retrieved missing episodes")
 
-	// store missing in datastore
-	n, err := sc.MissingToStore(se)
+	// refresh datastore
+	us, rs, fs, err := sc.RefreshStore(se)
 	if err != nil {
 		return fmt.Errorf("missing to store: %w", err)
 	}
 	log.Info().
-		Int("size", n).
-		Msg("Stored unique seasons with missing episodes in datastore")
+		Int("incomplete_seasons", us).
+		Int("completed_seasons", rs).
+		Msg("Refreshed datastore")
+
+	// search for series
+	for _, s := range fs {
+		// limit reached
+		if r.Limit == 0 {
+			break
+		}
+
+		// search for season
+		log.Info().
+			Int("series", s.Id).
+			Int("season", s.Season).
+			Time("air_date", s.AirDate).
+			Msg("Searching...")
+
+		// decrease limit
+		r.Limit--
+	}
 
 	return nil
 }

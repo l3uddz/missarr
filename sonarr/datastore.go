@@ -67,3 +67,60 @@ func (store *datastore) Upsert(series []Series) error {
 
 	return tx.Commit()
 }
+
+const sqlGetAll = `
+SELECT series, season, air_date, search_date
+FROM series
+ORDER BY air_date DESC
+`
+
+func (store *datastore) GetAll() (seasons []Series, err error) {
+	rows, err := store.Query(sqlGetAll)
+	if err != nil {
+		return seasons, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		series := Series{}
+		err = rows.Scan(&series.Id, &series.Season, &series.AirDate, &series.SearchDate)
+		if err != nil {
+			return seasons, err
+		}
+
+		seasons = append(seasons, series)
+	}
+
+	return seasons, rows.Err()
+}
+
+const sqlDelete = `
+DELETE FROM series WHERE series = ? AND season = ?
+`
+
+func (store *datastore) delete(tx *sql.Tx, series Series) error {
+	_, err := tx.Exec(sqlDelete, series.Id, series.Season)
+	if err != nil {
+		return fmt.Errorf("delete: %w", err)
+	}
+	return nil
+}
+
+func (store *datastore) Delete(series []Series) error {
+	tx, err := store.Begin()
+	if err != nil {
+		return err
+	}
+
+	for _, s := range series {
+		if err = store.delete(tx, s); err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				panic(rollbackErr)
+			}
+
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
