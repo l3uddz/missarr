@@ -5,11 +5,17 @@ import (
 	"time"
 )
 
-func (c *Client) MissingToStore(episodes []Episode) error {
+func (c *Client) MissingToStore(episodes []Episode) (int, error) {
 	// sort episodes into series
 	sm := make(map[int]time.Time)
 	series := make([]Series, 0)
+
 	for _, e := range episodes {
+		// skip if episode is not monitored, or we already have a file
+		if !e.Monitored || e.HasFile {
+			continue
+		}
+
 		// seen before?
 		if _, ok := sm[e.SeriesId]; ok {
 			continue
@@ -19,19 +25,16 @@ func (c *Client) MissingToStore(episodes []Episode) error {
 
 		series = append(series, Series{
 			Id:         e.SeriesId,
+			Season:     e.SeasonNumber,
 			AirDate:    e.AirDateUtc,
 			SearchDate: nil,
 		})
 	}
 
-	c.log.Debug().
-		Int("series", len(sm)).
-		Msg("Sorted missing into unique series")
-
 	// store episodes in datastore
 	if err := c.store.Upsert(series); err != nil {
-		return fmt.Errorf("upsert: %w", err)
+		return 0, fmt.Errorf("upsert: %w", err)
 	}
 
-	return nil
+	return len(sm), nil
 }

@@ -25,17 +25,22 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	}
 
 	// retrieve missing
-	epps, err := sc.Missing()
+	se, err := sc.Missing()
 	if err != nil {
 		return fmt.Errorf("retrieving missing: %w", err)
 	}
-
-	log.Info().Int("size", len(epps)).Msg("Retrieved missing")
+	log.Info().
+		Int("size", len(se)).
+		Msg("Retrieved missing")
 
 	// store missing in datastore
-	if err := sc.MissingToStore(epps); err != nil {
+	n, err := sc.MissingToStore(se)
+	if err != nil {
 		return fmt.Errorf("missing to store: %w", err)
 	}
+	log.Info().
+		Int("size", n).
+		Msg("Stored unique series with missing episodes in datastore")
 
 	return nil
 }
