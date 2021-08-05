@@ -40,7 +40,7 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	}
 	log.Info().
 		Int("size", n).
-		Msg("Stored unique series with missing episodes in datastore")
+		Msg("Stored unique seasons with missing episodes in datastore")
 
 	return nil
 }

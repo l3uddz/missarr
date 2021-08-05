@@ -32,9 +32,8 @@ func newDatastore(db *sql.DB, mg *migrate.Migrator) (*datastore, error) {
 const sqlUpsert = `
 INSERT INTO series (series, season, air_date, search_date)
 VALUES (?, ?, ?, ?)
-ON CONFLICT (series) DO UPDATE SET
+ON CONFLICT (series, season) DO UPDATE SET
 	air_date = excluded.air_date
-    , season = excluded.season
     , search_date = COALESCE(series.search_date, excluded.search_date)
 `
 

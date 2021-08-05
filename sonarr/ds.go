@@ -7,8 +7,8 @@ import (
 
 func (c *Client) MissingToStore(episodes []Episode) (int, error) {
 	// sort episodes into series
-	sm := make(map[int]time.Time)
-	series := make([]Series, 0)
+	sm := make(map[string]time.Time)
+	seasons := make([]Series, 0)
 
 	for _, e := range episodes {
 		// skip if episode is not monitored, or we already have a file
@@ -16,14 +16,15 @@ func (c *Client) MissingToStore(episodes []Episode) (int, error) {
 			continue
 		}
 
-		// seen before?
-		if _, ok := sm[e.SeriesId]; ok {
+		// series season before?
+		k := fmt.Sprintf("%v_%v", e.SeriesId, e.SeasonNumber)
+		if _, ok := sm[k]; ok {
 			continue
 		}
 		// add to map
-		sm[e.SeriesId] = e.AirDateUtc
+		sm[k] = e.AirDateUtc
 
-		series = append(series, Series{
+		seasons = append(seasons, Series{
 			Id:         e.SeriesId,
 			Season:     e.SeasonNumber,
 			AirDate:    e.AirDateUtc,
@@ -31,8 +32,8 @@ func (c *Client) MissingToStore(episodes []Episode) (int, error) {
 		})
 	}
 
-	// store episodes in datastore
-	if err := c.store.Upsert(series); err != nil {
+	// store seasons in datastore
+	if err := c.store.Upsert(seasons); err != nil {
 		return 0, fmt.Errorf("upsert: %w", err)
 	}
 
