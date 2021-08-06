@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+func (c *Client) UpdateStore(season []Series) error {
+	return c.store.Upsert(season)
+}
+
+func (c *Client) GetAll() ([]Series, error) {
+	return c.store.GetAll()
+}
+
 func (c *Client) RefreshStore(episodes []Episode) (int, int, []Series, error) {
 	// sort episodes into series
 	sm := make(map[string]time.Time)

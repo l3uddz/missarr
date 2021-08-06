@@ -84,3 +84,39 @@ func (c *Client) Missing() ([]Episode, error) {
 
 	return b.Records, nil
 }
+
+func (c *Client) Search(series *Series) (int, error) {
+	// prepare request
+	p := new(struct {
+		Name         string `json:"name"`
+		SeriesId     int    `json:"seriesId"`
+		SeasonNumber int    `json:"seasonNumber"`
+	})
+
+	p.Name = "SeasonSearch"
+	p.SeriesId = series.Id
+	p.SeasonNumber = series.Season
+
+	// send request
+	resp, err := rek.Post(util.JoinURL(c.apiURL, "command"), rek.Client(c.http), rek.Headers(c.apiHeaders),
+		rek.Json(p))
+	if err != nil {
+		return 0, fmt.Errorf("request search: %w", err)
+	}
+	defer resp.Body().Close()
+
+	// validate response
+	if resp.StatusCode() != 201 {
+		return 0, fmt.Errorf("validate search response: %s", resp.Status())
+	}
+
+	// decode response
+	b := new(struct {
+		Id int `json:"id"`
+	})
+	if err := json.NewDecoder(resp.Body()).Decode(b); err != nil {
+		return 0, fmt.Errorf("decode search response: %w", err)
+	}
+
+	return b.Id, nil
+}
