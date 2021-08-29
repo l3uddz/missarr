@@ -34,7 +34,10 @@ INSERT INTO series (series, season, air_date, search_date)
 VALUES (?, ?, ?, ?)
 ON CONFLICT (series, season) DO UPDATE SET
 	air_date = excluded.air_date
-    , search_date = COALESCE(series.search_date, excluded.search_date)
+    , search_date = CASE
+        WHEN excluded.air_date > series.air_date THEN NULL
+        ELSE COALESCE(series.search_date, excluded.search_date)
+		END
 `
 
 func (store *datastore) upsert(tx *sql.Tx, series int, season int, airDate time.Time, searchDate *time.Time) error {
