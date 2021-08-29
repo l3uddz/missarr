@@ -38,6 +38,10 @@ sonarr:
   api_key: your_api_key
 ```
 
+You can place this config file in the same folder as the missarr binary as `config.yml`
+
+Alternatively, you can place this config file in `~/.config/missarr/config.yml`
+
 ### Example commands
 
 Update to latest version: `missarr --update`
