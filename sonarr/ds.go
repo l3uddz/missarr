@@ -13,7 +13,7 @@ func (c *Client) GetAll() ([]Series, error) {
 	return c.store.GetAll()
 }
 
-func (c *Client) RefreshStore(episodes []Episode) (int, int, []Series, error) {
+func (c *Client) RefreshStore(episodes []Episode, allowSpecials bool, maxAirDate time.Time) (int, int, []Series, error) {
 	// sort episodes into series
 	sm := make(map[string]time.Time)
 	seasons := make([]Series, 0)
@@ -21,6 +21,16 @@ func (c *Client) RefreshStore(episodes []Episode) (int, int, []Series, error) {
 	for _, e := range episodes {
 		// skip if episode is not monitored, or we already have a file
 		if !e.Monitored || e.HasFile {
+			continue
+		}
+
+		// skip specials
+		if !allowSpecials && e.SeasonNumber == 0 {
+			continue
+		}
+
+		// skip episode if the air date is not before the max air date
+		if e.AirDateUtc.After(maxAirDate) {
 			continue
 		}
 
