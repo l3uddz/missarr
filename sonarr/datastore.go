@@ -36,7 +36,7 @@ ON CONFLICT (series, season) DO UPDATE SET
 	air_date = excluded.air_date
     , search_date = CASE
         WHEN excluded.air_date > series.air_date THEN NULL
-        ELSE COALESCE(series.search_date, excluded.search_date)
+        ELSE COALESCE(excluded.search_date, series.search_date)
 		END
 `
 
