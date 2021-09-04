@@ -12,6 +12,8 @@ import (
 type SonarrCmd struct {
 	Limit        int           `default:"10" help:"How many items to search for before stopping"`
 	LastSearched time.Duration `default:"672h" help:"How long before an item can be searched again"`
+	LastAirDate  time.Duration `default:"72h" help:"How long before an item can be considered missing based on air date"`
+	AllowSpecial bool          `default:"false" help:"Dont consider specials as missing"`
 	SkipRefresh  bool          `default:"false" help:"Retrieve current missing from sonarr"`
 }
 
@@ -42,7 +44,7 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 			Msg("Retrieved missing episodes")
 
 		// refresh datastore
-		us, rs, fs, err = sc.RefreshStore(se)
+		us, rs, fs, err = sc.RefreshStore(se, r.AllowSpecial, time.Now().Add(-r.LastAirDate))
 		if err != nil {
 			return fmt.Errorf("missing to store: %w", err)
 		}
