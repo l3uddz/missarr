@@ -13,7 +13,7 @@ type SonarrCmd struct {
 	Limit        int           `default:"10" help:"How many items to search for before stopping"`
 	LastSearched time.Duration `default:"672h" help:"How long before an item can be searched again"`
 	LastAirDate  time.Duration `default:"72h" help:"How long before an item can be considered missing based on air date"`
-	AllowSpecial bool          `default:"false" help:"Dont consider specials as missing"`
+	AllowSpecial bool          `default:"false" help:"Allow specials to be considered missing"`
 	SkipRefresh  bool          `default:"false" help:"Retrieve current missing from sonarr"`
 }
 
