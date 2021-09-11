@@ -70,6 +70,7 @@ func (c *Client) RefreshStore(episodes []Episode, allowSpecials bool, maxAirDate
 		k := fmt.Sprintf("%v_%v", s.Id, s.Season)
 		if _, ok := sm[k]; !ok {
 			seasonsToRemove = append(seasonsToRemove, s)
+			continue
 		}
 		finalSeasons = append(finalSeasons, s)
 	}
