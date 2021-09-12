@@ -23,7 +23,7 @@ builds:
       - -trimpath
     ignore:
       - goos: windows
-        goarch: arm
+        goarch: arm64
 
 # Archive
 archives:
