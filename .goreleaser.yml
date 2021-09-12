@@ -21,6 +21,9 @@ builds:
       - -X "github.com/l3uddz/missarr/build.Timestamp={{ .Timestamp }}"
     flags:
       - -trimpath
+    ignore:
+      - goos: windows
+        goarch: arm
 
 # Archive
 archives:
