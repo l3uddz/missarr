@@ -7,6 +7,7 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/l3uddz/missarr/build"
 	"github.com/l3uddz/missarr/migrate"
+	"github.com/l3uddz/missarr/radarr"
 	"github.com/l3uddz/missarr/sonarr"
 	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
@@ -20,6 +21,7 @@ import (
 
 type config struct {
 	Sonarr sonarr.Config `yaml:"sonarr"`
+	Radarr radarr.Config `yaml:"radarr"`
 }
 
 var (
@@ -35,6 +37,7 @@ var (
 
 		// commands
 		Sonarr SonarrCmd `cmd help:"Search sonarr for missing content"`
+		Radarr RadarrCmd `cmd help:"Search radarr for missing content"`
 	}
 )
 
