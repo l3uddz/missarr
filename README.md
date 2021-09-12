@@ -36,7 +36,12 @@ If you need to debug certain Missarr behaviour, either add the `-v` flag for deb
 sonarr:
   url: https://sonarr.your-domain.com
   api_key: your_api_key
+radarr:
+  url: https://radarr.your-domain.com
+  api_key: your_api_key
 ```
+
+If you are experiencing timeouts while retrieving data from your PVR, you can add the `timeout` config option which currently defaults to `90` (seconds).
 
 You can place this config file in the same folder as the missarr binary as `config.yml`
 
@@ -50,11 +55,15 @@ Search for 10 seasons: `missarr sonarr --limit 10`
 
 Search for 10 seasons (without updating seasons cache) `missarr sonarr --limit 10 --skip-refresh`
 
+Search for 10 movies: `missarr radarr --limit 10`
+
+Search for 10 movies (without updating movies cache) `missarr radarr --limit 10 --skip-refresh`
+
 ## Donate
 
 If you find this project helpful, feel free to make a small donation:
 
-- [Monzo](https://monzo.me/today): Credit Cards, Apple Pay, Google Pay
+- [Revolut](https://revolut.me/l3uddz): Credit Cards, Apple Pay, Google Pay
 
 - [Paypal: l3uddz@gmail.com](https://www.paypal.me/l3uddz)
 
