@@ -10,6 +10,7 @@ builds:
       - linux
       - darwin
       - windows
+      - freebsd
     main: ./cmd/missarr
     goarch:
       - amd64
@@ -24,6 +25,13 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
+      - goos: freebsd
+        goarch: arm64
+
+# MacOS Universal Binaries
+universal_binaries:
+  -
+    replace: true
 
 # Archive
 archives:
