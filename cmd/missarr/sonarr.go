@@ -15,6 +15,7 @@ type SonarrCmd struct {
 	LastAirDate  time.Duration `default:"72h" help:"How long before an item can be considered missing based on air date"`
 	AllowSpecial bool          `default:"false" help:"Allow specials to be considered missing"`
 	SkipRefresh  bool          `default:"false" help:"Retrieve current missing from sonarr"`
+	Delay        time.Duration `default:"0s" help:"Delay between search requests"`
 }
 
 func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
@@ -96,6 +97,11 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 		s.SearchDate = &now
 		if err := sc.UpdateStore([]sonarr.Series{s}); err != nil {
 			return fmt.Errorf("update store: %w", err)
+		}
+
+		// sleep for delay
+		if r.Limit > 0 {
+			time.Sleep(r.Delay)
 		}
 
 		// decrease limit
