@@ -16,7 +16,7 @@ missarr sends search requests for missing episodes to Sonarr
 
 ## Installing missarr
 
-missarr offers [pre-compiled binaries](https://github.com/l3uddz/missarr/releases/latest) for Linux, MacOS and Windows for each official release.
+missarr offers [pre-compiled binaries](https://github.com/l3uddz/missarr/releases/latest) for Linux, macOS and Windows for each official release.
 
 Alternatively, you can build the Missarr binary yourself.
 To build missarr on your system, make sure:
@@ -26,7 +26,7 @@ To build missarr on your system, make sure:
 3. Clone this repository and cd into it from the terminal
 4. Run `make build` from the terminal
 
-You should now have a binary with the name `missarr` in the appropriate dist sub-directory of the project.
+You should now have a binary with the name `missarr` in the appropriate dist subdirectory of the project.
 
 If you need to debug certain Missarr behaviour, either add the `-v` flag for debug mode or the `-vv` flag for trace mode to get even more details about internal behaviour.
 
@@ -41,7 +41,7 @@ radarr:
   api_key: your_api_key
 ```
 
-If you are experiencing timeouts while retrieving data from your PVR, you can add the `timeout` config option which currently defaults to `90` (seconds).
+If you are experiencing timeouts while retrieving data from your PVR, you can add the `timeout` config option, which currently defaults to `90` (seconds).
 
 You can place this config file in the same folder as the missarr binary as `config.yml`
 
