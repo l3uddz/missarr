@@ -1,0 +1,1 @@
+ALTER TABLE movies ADD [type] VARCHAR(10) NOT NULL DEFAULT 'missing'
