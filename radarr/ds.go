@@ -13,10 +13,14 @@ func (c *Client) GetAll() ([]Movie, error) {
 	return c.store.GetAll()
 }
 
-func (c *Client) RefreshStore(data []MovieResponse, maxReleaseDate time.Time) (int, int, []Movie, error) {
+func (c *Client) RefreshStore(data []MovieResponse, maxReleaseDate time.Time, cutoff bool) (int, int, []Movie, error) {
 	// filter movies
 	movies := make([]Movie, 0)
 	sm := make(map[int]int)
+	missingType := "missing"
+	if cutoff {
+		missingType = "cutoff"
+	}
 
 	for _, m := range data {
 		// skip if movie matches conditions
@@ -25,7 +29,11 @@ func (c *Client) RefreshStore(data []MovieResponse, maxReleaseDate time.Time) (i
 			continue
 		case !m.IsAvailable:
 			continue
-		case m.HasFile, m.SizeOnDisk > 0:
+		case m.HasFile && !cutoff, m.SizeOnDisk > 0 && !cutoff:
+			continue
+		case cutoff && m.HasFile && !m.MovieFile.QualityCutoffNotMet:
+			continue
+		case cutoff && !m.HasFile:
 			continue
 		}
 
@@ -49,6 +57,7 @@ func (c *Client) RefreshStore(data []MovieResponse, maxReleaseDate time.Time) (i
 			Id:          m.Id,
 			ReleaseDate: releaseDate,
 			SearchDate:  nil,
+			Type:        missingType,
 		})
 	}
 
@@ -69,6 +78,9 @@ func (c *Client) RefreshStore(data []MovieResponse, maxReleaseDate time.Time) (i
 	moviesToRemove := make([]Movie, 0)
 	finalMovies := make([]Movie, 0)
 	for _, m := range em {
+		if m.Type != missingType {
+			continue
+		}
 		if _, ok := sm[m.Id]; !ok {
 			moviesToRemove = append(moviesToRemove, m)
 			continue

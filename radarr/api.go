@@ -34,6 +34,10 @@ func (c *Client) getSystemStatus() (*systemStatus, error) {
 	return b, nil
 }
 
+type MovieFile struct {
+	QualityCutoffNotMet bool
+}
+
 type MovieResponse struct {
 	SizeOnDisk     int       `json:"sizeOnDisk"`
 	Status         string    `json:"status"`
@@ -45,6 +49,7 @@ type MovieResponse struct {
 	IsAvailable    bool      `json:"isAvailable"`
 	Added          time.Time `json:"added"`
 	Id             int       `json:"id"`
+	MovieFile      MovieFile `json:"movieFile"`
 }
 
 func (c *Client) Movies() ([]MovieResponse, error) {
