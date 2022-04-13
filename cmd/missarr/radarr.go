@@ -15,6 +15,7 @@ type RadarrCmd struct {
 	LastReleaseDate time.Duration `default:"72h" help:"How long before an item can be considered missing based on release date"`
 	SkipRefresh     bool          `default:"false" help:"Retrieve current missing from radarr"`
 	Delay           time.Duration `default:"0s" help:"Delay between search requests"`
+	Cutoff          bool          `default:"false" help:"Search Cutoff Unmet Items"`
 }
 
 func (r *RadarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
@@ -44,7 +45,7 @@ func (r *RadarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 			Msg("Retrieved movies")
 
 		// refresh datastore
-		us, rs, fm, err = sc.RefreshStore(rm, time.Now().Add(-r.LastReleaseDate))
+		us, rs, fm, err = sc.RefreshStore(rm, time.Now().Add(-r.LastReleaseDate), r.Cutoff)
 		if err != nil {
 			return fmt.Errorf("missing to store: %w", err)
 		}

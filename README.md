@@ -18,6 +18,14 @@ missarr sends search requests for missing episodes to Sonarr
 
 missarr offers [pre-compiled binaries](https://github.com/l3uddz/missarr/releases/latest) for Linux, macOS and Windows for each official release.
 
+Example install (installing to /opt/missarr on linux amd64):
+````
+cd /opt
+mkdir missarr && cd missarr
+curl -fLvo missarr https://github.com/jolbol1/missarr/releases/download/v1.2.0/missarr_v1.2.0_linux_amd64
+chmod +x missarr
+````
+
 Alternatively, you can build the Missarr binary yourself.
 To build missarr on your system, make sure:
 
@@ -58,6 +66,9 @@ Search for 10 seasons (without updating seasons cache) `missarr sonarr --limit 1
 Search for 10 movies: `missarr radarr --limit 10`
 
 Search for 10 movies (without updating movies cache) `missarr radarr --limit 10 --skip-refresh`
+
+Search for 10 movies with cutoff unmet: `missarr radarr --limit 10 --cutoff`
+
 
 ## Donate
 

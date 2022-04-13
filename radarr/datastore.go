@@ -30,8 +30,8 @@ func newDatastore(db *sql.DB, mg *migrate.Migrator) (*datastore, error) {
 }
 
 const sqlUpsert = `
-INSERT INTO movies (movie, release_date, search_date)
-VALUES (?, ?, ?)
+INSERT INTO movies (movie, release_date, search_date, type)
+VALUES (?, ?, ?, ?)
 ON CONFLICT (movie) DO UPDATE SET
 	release_date = excluded.release_date
     , search_date = CASE
@@ -40,8 +40,8 @@ ON CONFLICT (movie) DO UPDATE SET
 		END
 `
 
-func (store *datastore) upsert(tx *sql.Tx, movie int, releaseDate time.Time, searchDate *time.Time) error {
-	_, err := tx.Exec(sqlUpsert, movie, releaseDate, searchDate)
+func (store *datastore) upsert(tx *sql.Tx, movie int, releaseDate time.Time, searchDate *time.Time, missingType string) error {
+	_, err := tx.Exec(sqlUpsert, movie, releaseDate, searchDate, missingType)
 	return err
 }
 
@@ -49,6 +49,7 @@ type Movie struct {
 	Id          int
 	ReleaseDate time.Time
 	SearchDate  *time.Time
+	Type        string
 }
 
 func (store *datastore) Upsert(movies []Movie) error {
@@ -58,7 +59,7 @@ func (store *datastore) Upsert(movies []Movie) error {
 	}
 
 	for _, m := range movies {
-		if err = store.upsert(tx, m.Id, m.ReleaseDate, m.SearchDate); err != nil {
+		if err = store.upsert(tx, m.Id, m.ReleaseDate, m.SearchDate, m.Type); err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				panic(rollbackErr)
 			}
@@ -71,7 +72,7 @@ func (store *datastore) Upsert(movies []Movie) error {
 }
 
 const sqlGetAll = `
-SELECT movie, release_date, search_date
+SELECT movie, release_date, search_date, type
 FROM movies
 ORDER BY release_date DESC
 `
@@ -85,7 +86,7 @@ func (store *datastore) GetAll() (movies []Movie, err error) {
 	defer rows.Close()
 	for rows.Next() {
 		movie := Movie{}
-		err = rows.Scan(&movie.Id, &movie.ReleaseDate, &movie.SearchDate)
+		err = rows.Scan(&movie.Id, &movie.ReleaseDate, &movie.SearchDate, &movie.Type)
 		if err != nil {
 			return movies, err
 		}
