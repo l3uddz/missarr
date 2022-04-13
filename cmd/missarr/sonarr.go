@@ -25,6 +25,11 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 		r.Limit = 10
 	}
 
+	missingType := "missing"
+	if r.Cutoff {
+		missingType = "cutoff_unmet"
+	}
+
 	// init
 	sc, err := sonarr.New(&c.Sonarr, db, mg)
 	if err != nil {
@@ -39,16 +44,16 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	if !r.SkipRefresh {
 		se, err = sc.Missing(r.Cutoff)
 		if err != nil {
-			return fmt.Errorf("retrieving missing: %w", err)
+			return fmt.Errorf("retrieving %v: %w", missingType, err)
 		}
 		log.Info().
 			Int("size", len(se)).
-			Msg("Retrieved missing episodes")
+			Msg(fmt.Sprintf("Retrieved %v episodes", missingType))
 
 		// refresh datastore
 		us, rs, fs, err = sc.RefreshStore(se, r.AllowSpecial, time.Now().Add(-r.LastAirDate), r.Cutoff)
 		if err != nil {
-			return fmt.Errorf("missing to store: %w", err)
+			return fmt.Errorf("%v to store: %w", missingType, err)
 		}
 		log.Info().
 			Int("incomplete_seasons", us).
