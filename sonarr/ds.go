@@ -13,14 +13,18 @@ func (c *Client) GetAll() ([]Series, error) {
 	return c.store.GetAll()
 }
 
-func (c *Client) RefreshStore(episodes []Episode, allowSpecials bool, maxAirDate time.Time) (int, int, []Series, error) {
+func (c *Client) RefreshStore(episodes []Episode, allowSpecials bool, maxAirDate time.Time, cutoff bool) (int, int, []Series, error) {
 	// sort episodes into series
 	sm := make(map[string]time.Time)
 	seasons := make([]Series, 0)
+	missingType := "missing"
+	if cutoff {
+		missingType = "cutoff"
+	}
 
 	for _, e := range episodes {
 		// skip if episode is not monitored, or we already have a file
-		if !e.Monitored || e.HasFile {
+		if !e.Monitored || (e.HasFile && !cutoff) {
 			continue
 		}
 
@@ -47,6 +51,8 @@ func (c *Client) RefreshStore(episodes []Episode, allowSpecials bool, maxAirDate
 			Season:     e.SeasonNumber,
 			AirDate:    e.AirDateUtc,
 			SearchDate: nil,
+			Type:       missingType,
+
 		})
 	}
 
@@ -68,6 +74,9 @@ func (c *Client) RefreshStore(episodes []Episode, allowSpecials bool, maxAirDate
 	finalSeasons := make([]Series, 0)
 	for _, s := range es {
 		k := fmt.Sprintf("%v_%v", s.Id, s.Season)
+		if s.Type != missingType {
+			continue
+		}
 		if _, ok := sm[k]; !ok {
 			seasonsToRemove = append(seasonsToRemove, s)
 			continue

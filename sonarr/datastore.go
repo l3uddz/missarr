@@ -30,8 +30,8 @@ func newDatastore(db *sql.DB, mg *migrate.Migrator) (*datastore, error) {
 }
 
 const sqlUpsert = `
-INSERT INTO series (series, season, air_date, search_date)
-VALUES (?, ?, ?, ?)
+INSERT INTO series (series, season, air_date, search_date, type)
+VALUES (?, ?, ?, ?, ?)
 ON CONFLICT (series, season) DO UPDATE SET
 	air_date = excluded.air_date
     , search_date = CASE
@@ -40,8 +40,8 @@ ON CONFLICT (series, season) DO UPDATE SET
 		END
 `
 
-func (store *datastore) upsert(tx *sql.Tx, series int, season int, airDate time.Time, searchDate *time.Time) error {
-	_, err := tx.Exec(sqlUpsert, series, season, airDate, searchDate)
+func (store *datastore) upsert(tx *sql.Tx, series int, season int, airDate time.Time, searchDate *time.Time, missingType string) error {
+	_, err := tx.Exec(sqlUpsert, series, season, airDate, searchDate, missingType)
 	return err
 }
 
@@ -50,6 +50,7 @@ type Series struct {
 	Season     int
 	AirDate    time.Time
 	SearchDate *time.Time
+	Type       string
 }
 
 func (store *datastore) Upsert(series []Series) error {
@@ -59,7 +60,7 @@ func (store *datastore) Upsert(series []Series) error {
 	}
 
 	for _, s := range series {
-		if err = store.upsert(tx, s.Id, s.Season, s.AirDate, s.SearchDate); err != nil {
+		if err = store.upsert(tx, s.Id, s.Season, s.AirDate, s.SearchDate, s.Type); err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				panic(rollbackErr)
 			}
@@ -72,7 +73,7 @@ func (store *datastore) Upsert(series []Series) error {
 }
 
 const sqlGetAll = `
-SELECT series, season, air_date, search_date
+SELECT series, season, air_date, search_date, type
 FROM series
 ORDER BY air_date DESC
 `
@@ -86,7 +87,7 @@ func (store *datastore) GetAll() (seasons []Series, err error) {
 	defer rows.Close()
 	for rows.Next() {
 		series := Series{}
-		err = rows.Scan(&series.Id, &series.Season, &series.AirDate, &series.SearchDate)
+		err = rows.Scan(&series.Id, &series.Season, &series.AirDate, &series.SearchDate, &series.Type)
 		if err != nil {
 			return seasons, err
 		}

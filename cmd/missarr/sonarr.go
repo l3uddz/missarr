@@ -16,6 +16,7 @@ type SonarrCmd struct {
 	AllowSpecial bool          `default:"false" help:"Allow specials to be considered missing"`
 	SkipRefresh  bool          `default:"false" help:"Retrieve current missing from sonarr"`
 	Delay        time.Duration `default:"0s" help:"Delay between search requests"`
+	Cutoff       bool          `default:"false" help:"Search Cutoff Unmet Items"`
 }
 
 func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
@@ -36,7 +37,7 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	var us, rs int
 
 	if !r.SkipRefresh {
-		se, err = sc.Missing()
+		se, err = sc.Missing(r.Cutoff)
 		if err != nil {
 			return fmt.Errorf("retrieving missing: %w", err)
 		}
@@ -45,7 +46,7 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 			Msg("Retrieved missing episodes")
 
 		// refresh datastore
-		us, rs, fs, err = sc.RefreshStore(se, r.AllowSpecial, time.Now().Add(-r.LastAirDate))
+		us, rs, fs, err = sc.RefreshStore(se, r.AllowSpecial, time.Now().Add(-r.LastAirDate), r.Cutoff)
 		if err != nil {
 			return fmt.Errorf("missing to store: %w", err)
 		}
