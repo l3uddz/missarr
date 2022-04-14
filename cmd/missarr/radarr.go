@@ -24,6 +24,11 @@ func (r *RadarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 		r.Limit = 10
 	}
 
+	missingType := "missing"
+	if r.Cutoff {
+		missingType = "cutoff_unmet"
+	}
+
 	// init
 	sc, err := radarr.New(&c.Radarr, db, mg)
 	if err != nil {
@@ -47,10 +52,10 @@ func (r *RadarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 		// refresh datastore
 		us, rs, fm, err = sc.RefreshStore(rm, time.Now().Add(-r.LastReleaseDate), r.Cutoff)
 		if err != nil {
-			return fmt.Errorf("missing to store: %w", err)
+			return fmt.Errorf("%v to store: %w", missingType, err)
 		}
 		log.Info().
-			Int("missing_movies", us).
+			Int(fmt.Sprintf("%v_movies", missingType), us).
 			Int("completed_movies", rs).
 			Msg("Refreshed datastore")
 	} else {

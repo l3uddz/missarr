@@ -16,12 +16,18 @@ type SonarrCmd struct {
 	AllowSpecial bool          `default:"false" help:"Allow specials to be considered missing"`
 	SkipRefresh  bool          `default:"false" help:"Retrieve current missing from sonarr"`
 	Delay        time.Duration `default:"0s" help:"Delay between search requests"`
+	Cutoff       bool          `default:"false" help:"Search Cutoff Unmet Items"`
 }
 
 func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	// validate flags
 	if r.Limit == 0 {
 		r.Limit = 10
+	}
+
+	missingType := "missing"
+	if r.Cutoff {
+		missingType = "cutoff_unmet"
 	}
 
 	// init
@@ -36,18 +42,18 @@ func (r *SonarrCmd) Run(c *config, db *sql.DB, mg *migrate.Migrator) error {
 	var us, rs int
 
 	if !r.SkipRefresh {
-		se, err = sc.Missing()
+		se, err = sc.Missing(r.Cutoff)
 		if err != nil {
-			return fmt.Errorf("retrieving missing: %w", err)
+			return fmt.Errorf("retrieving %v: %w", missingType, err)
 		}
 		log.Info().
 			Int("size", len(se)).
-			Msg("Retrieved missing episodes")
+			Msg(fmt.Sprintf("Retrieved %v episodes", missingType))
 
 		// refresh datastore
-		us, rs, fs, err = sc.RefreshStore(se, r.AllowSpecial, time.Now().Add(-r.LastAirDate))
+		us, rs, fs, err = sc.RefreshStore(se, r.AllowSpecial, time.Now().Add(-r.LastAirDate), r.Cutoff)
 		if err != nil {
-			return fmt.Errorf("missing to store: %w", err)
+			return fmt.Errorf("%v to store: %w", missingType, err)
 		}
 		log.Info().
 			Int("incomplete_seasons", us).

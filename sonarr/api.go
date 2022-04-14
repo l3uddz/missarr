@@ -49,9 +49,13 @@ type Episode struct {
 	Id                       int       `json:"id"`
 }
 
-func (c *Client) Missing() ([]Episode, error) {
+func (c *Client) Missing(cutoff bool) ([]Episode, error) {
 	// prepare request
-	reqURL, err := util.URLWithQuery(util.JoinURL(c.apiURL, "wanted", "missing"), url.Values{
+	missingType := "missing"
+	if cutoff {
+		missingType = "cutoff"
+	}
+	reqURL, err := util.URLWithQuery(util.JoinURL(c.apiURL, "wanted", missingType), url.Values{
 		"page":     []string{"1"},
 		"pageSize": []string{"100000"},
 		"sortDir":  []string{"desc"},
